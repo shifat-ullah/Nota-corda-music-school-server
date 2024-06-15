@@ -2,8 +2,8 @@ const express = require('express')
 const app = express()
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require("dotenv").config();
-// const stripe = require("stripe")(process.env.payment_secreat_key);
-// const jwt = require('jsonwebtoken');
+const stripe = require("stripe")(process.env.payment_secreat_key);
+const jwt = require('jsonwebtoken');
 const port = process.env.PORT || 5000
 const cors = require('cors');
 require('dotenv').config()
@@ -84,7 +84,7 @@ async function run() {
 
 
     // database users data hanlde api
-    app.get('/users', /* varifyJwt, varifyAdmin, */ async (req, res) => {
+    app.get('/users', varifyJwt, varifyAdmin, async (req, res) => {
       const users = await usersCollection.find({}).toArray()
       res.send(users)
     })
@@ -109,7 +109,7 @@ async function run() {
       res.send(result);
     });
 
-    app.delete('/users/:id', /* varifyJwt, varifyAdmin, */ async (req, res) => {
+    app.delete('/users/:id', varifyJwt, varifyAdmin, async (req, res) => {
       const id = req.params.id
       const query = { _id: new ObjectId(id) }
       const result = await usersCollection.deleteOne(query)
@@ -117,7 +117,7 @@ async function run() {
     })
 
     //update users role
-    app.patch('/users/admin/:id',/* varifyJwt, */ async (req, res) => {
+    app.patch('/users/admin/:id',varifyJwt, async (req, res) => {
       const id = req.params.id
       // console.log(id);
       const filter = { _id: new ObjectId(id) }
@@ -132,7 +132,7 @@ async function run() {
     })
 
     //update instructor role
-    app.patch('/users/instructor/:id',/* varifyJwt, */ async (req, res) => {
+    app.patch('/users/instructor/:id',varifyJwt, async (req, res) => {
       const id = req.params.id
       // console.log(id);
       const filter = { _id: new ObjectId(id) }
@@ -150,7 +150,7 @@ async function run() {
 
 
     // all users data related routes
-    app.get('/users/student/:email', /* varifyJwt, */ async (req, res) => {
+    app.get('/users/student/:email', varifyJwt, async (req, res) => {
       const email = req.params.email
       if (req.decoded.email !== email) {
         res.send({ student: false })
@@ -162,7 +162,7 @@ async function run() {
     })
 
 
-    app.get('/users/instructor/:email', /* varifyJwt, */ async (req, res) => {
+    app.get('/users/instructor/:email', varifyJwt, async (req, res) => {
       const email = req.params.email
       if (req.decoded.email !== email) {
         res.send({ instructor: false })
@@ -174,7 +174,7 @@ async function run() {
     })
 
 
-    app.get('/users/admin/:email', /* varifyJwt, */ async (req, res) => {
+    app.get('/users/admin/:email', varifyJwt, async (req, res) => {
       const email = req.params.email
       if (req.decoded.email !== email) {
         res.send({ admin: false })
@@ -203,7 +203,7 @@ async function run() {
     });
 
     // allClass get instructor api
-    app.get('/instructorClass', /* varifyJwt, */ async (req, res) => {
+    app.get('/instructorClass', varifyJwt, async (req, res) => {
       const email = req.query.email
       // console.log(email);
       if (!email) {
@@ -230,7 +230,7 @@ async function run() {
 
 
     //all allClass api new class add
-    app.post('/allClass', /* varifyJwt, varifyInstructorJwt, */ async (req, res) => {
+    app.post('/allClass', varifyJwt, varifyInstructorJwt, async (req, res) => {
       const classData = req.body;
       // console.log(classData,'classData');
       const result = await classesCollection.insertOne(classData);
@@ -238,7 +238,7 @@ async function run() {
     })
 
     //all allClass api new class add
-    app.put('/allClass/:id', /* varifyJwt, varifyInstructorJwt, */ async (req, res) => {
+    app.put('/allClass/:id', varifyJwt, varifyInstructorJwt, async (req, res) => {
       const id = req.params.id
       const updateClass = req.body;
       // console.log(classData,'classData');
@@ -265,7 +265,7 @@ async function run() {
 
 
     //all allClass api new class add
-    app.put('/allClassFeeddback/:id', /* varifyJwt, varifyAdmin, */ async (req, res) => {
+    app.put('/allClassFeeddback/:id', varifyJwt, varifyAdmin, async (req, res) => {
       const id = req.params.id
       const feedbackClass = req.body;
       // console.log(classData,'classData');
@@ -293,7 +293,7 @@ async function run() {
 
 
     // instructor class delete api
-    app.delete('/allClass/:id',/*  varifyJwt, varifyInstructorJwt, */ async (req, res) => {
+    app.delete('/allClass/:id', varifyJwt, varifyInstructorJwt, async (req, res) => {
       const id = req.params.id
       const query = { _id: new ObjectId(id) }
       const result = await classesCollection.deleteOne(query)
@@ -301,7 +301,7 @@ async function run() {
     })
 
     // admin update instructor class status
-    app.patch('/allClass/admin/:id',/*  varifyJwt, varifyAdmin */ async (req, res) => {
+    app.patch('/allClass/admin/:id', varifyJwt, varifyAdmin, async (req, res) => {
       const id = req.params.id
       // console.log(id);
       const filter = { _id: new ObjectId(id) }
@@ -316,7 +316,7 @@ async function run() {
     })
 
     // admin update instructor class status
-    app.patch('/allClass/adminDenied/:id', /* varifyJwt, varifyAdmin, */ async (req, res) => {
+    app.patch('/allClass/adminDenied/:id', varifyJwt, varifyAdmin, async (req, res) => {
       const id = req.params.id
       // console.log(id);
       const filter = { _id: new ObjectId(id) }
@@ -332,7 +332,7 @@ async function run() {
 
 
     // admin delete instructor classs api
-    app.delete('/allClassAdminDelete/:id', /* varifyJwt, varifyAdmin, */ async (req, res) => {
+    app.delete('/allClassAdminDelete/:id', varifyJwt, varifyAdmin, async (req, res) => {
       const id = req.params.id
       const query = { _id: new ObjectId(id) }
       const result = await classesCollection.deleteOne(query)
@@ -347,7 +347,7 @@ async function run() {
     })
 
     // update and add inturctors
-    app.post('/instructors', /* varifyJwt, varifyAdmin, */ async (req, res) => {
+    app.post('/instructors', varifyJwt, varifyAdmin, async (req, res) => {
       const instructor = req.body;
       const query = { email: instructor.email }
       // console.log(user,'user');
@@ -375,7 +375,7 @@ async function run() {
     // });
 
     // select classes part
-    app.get('/selectClasses', /* varifyJwt, */ async (req, res) => {
+    app.get('/selectClasses', varifyJwt, async (req, res) => {
       const email = req.query.email
       // console.log(email);
       if (!email) {
@@ -409,7 +409,7 @@ async function run() {
 
 
     // create payments intent
-    app.post('/payment', /* varifyJwt, */ async (req, res) => {
+    app.post('/payment', varifyJwt, async (req, res) => {
       const { price } = req.body
       const amount = parseInt(price * 100)
       // console.log('price', price, 'amount', amount);
@@ -424,7 +424,7 @@ async function run() {
     })
 
 
-    app.post('/payments', /* varifyJwt, */ async (req, res) => {
+    app.post('/payments', varifyJwt, async (req, res) => {
       try {
         const payment = req.body;
         const insertResult = await paymentCollection.insertOne(payment);
@@ -458,7 +458,7 @@ async function run() {
 
 
     // // payment history api
-    app.get('/paymentHistory', /* varifyJwt, */ async (req, res) => {
+    app.get('/paymentHistory', varifyJwt, async (req, res) => {
       const email = req.query.email
       // console.log(email);
       if (!email) {
